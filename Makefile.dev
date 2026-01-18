@@ -1,0 +1,79 @@
+.PHONY: init-dev install-dev pre-commit pre-commit-install pre-commit-update pre-commit-autoupdate pre-commit-run-all dev-shell docs docs-serve watch watch-tests bench bench-compare profile profile-memory security-check audit dependencies-update dependencies-update-all
+
+.git:
+	git init
+
+install-dev: ## Install package in development mode
+	uv sync --dev
+
+pre-commit: ## Run pre-commit on all files
+	uv run pre-commit run --all-files
+
+pre-commit-install: ## Install pre-commit hooks
+	uv run pre-commit install --install-hooks
+
+pre-commit-update: ## Update pre-commit hooks to latest versions
+	uv run pre-commit autoupdate
+
+pre-commit-autoupdate: pre-commit-update ## Alias for pre-commit-update
+
+pre-commit-run-all: ## Run pre-commit on all files (including uncommitted)
+	uv run pre-commit run --all-files --show-diff-on-failure
+
+dev-shell: ## Start development shell with all dependencies
+	uv shell
+
+docs: ## Build documentation
+	uv run mkdocs build
+
+docs-serve: ## Serve documentation locally
+	uv run mkdocs serve
+
+watch: ## Watch for file changes and run tests
+	uv run watchmedo shell-command \
+		--patterns="*.py" \
+		--recursive \
+		--command='make test-fast' \
+		--ignore-patterns="*/__pycache__/*;*.pyc" \
+		--ignore-directories \
+		--drop
+
+watch-tests: ## Watch test files and run on changes
+	uv run watchmedo shell-command \
+		--patterns="test_*.py;*_test.py" \
+		--recursive \
+		--command='make test-fast' \
+		--ignore-patterns="*/__pycache__/*;*.pyc" \
+		--ignore-directories \
+		--drop
+
+bench: ## Run benchmarks
+	uv run pytest tests/ -v --benchmark-only --benchmark-autosave
+
+bench-compare: ## Compare benchmark results
+	uv run pytest tests/ -v --benchmark-compare
+
+profile: ## Run profiling on main module
+	uv run python -m cProfile -o profile.prof -m hackathon_roulette.__main__
+	uv run snakeviz profile.prof
+
+profile-memory: ## Run memory profiling
+	uv run python -m memory_profiler src/hackathon_roulette/__main__.py
+
+security-check: ## Run security checks with bandit
+	uv run bandit -r src/hackathon_roulette -x tests
+
+audit: ## Audit dependencies for vulnerabilities
+	uv export --format requirements --no-hashes | uv pip audit -
+
+dependencies-update: ## Update dependencies to latest compatible versions
+	uv lock --upgrade
+
+dependencies-update-all: ## Update all dependencies to latest versions
+	uv lock --upgrade-package "*"
+
+init-dev:  ## Init dev environment
+	@echo "Installing dev dependencies"
+	@make install-dev
+	@echo "Installing pre-commit"
+	@make pre-commit-install

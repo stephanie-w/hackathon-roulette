@@ -1,0 +1,30 @@
+.PHONY: ci-check release release-patch release-minor release-major
+
+ci-check: ## Run all CI checks
+	@echo "Running format check..."
+	@make format-check
+	@echo "Running lint check..."
+	@make lint
+	@echo "Running type check..."
+	@make typecheck
+	@echo "Running tests..."
+	@make test
+	@echo "Running security check..."
+	@make security-check
+	@echo "All checks passed! ✅"
+
+release: ## Prepare release (dry run)
+	@echo "Running release checks..."
+	@make ci-check
+	@echo "Building package..."
+	@make build
+	@echo "Release ready! Run 'make publish' to publish to PyPI."
+
+release-patch: ## Bump patch version
+	uv run bumpver update --patch --commit --tag
+
+release-minor: ## Bump minor version
+	uv run bumpver update --minor --commit --tag
+
+release-major: ## Bump major version
+	uv run bumpver update --major --commit --tag

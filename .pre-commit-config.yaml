@@ -1,0 +1,114 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.11
+    hooks:
+      - id: ruff
+        name: ruff lint
+        description: "Run ruff linter"
+        args: [--fix]
+        types_or: [python, pyi]
+        stages: [pre-commit, pre-push]
+      - id: ruff-format
+        name: ruff format
+        description: "Run ruff formatter"
+        types_or: [python, pyi]
+        stages: [pre-commit, pre-push]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.19.1
+    hooks:
+      - id: mypy
+        name: mypy type checking
+        description: "Run mypy static type checker"
+        args: [--strict, --ignore-missing-imports]
+        additional_dependencies: [types-setuptools]
+        types_or: [python, pyi]
+        stages: [pre-commit, pre-push]
+        exclude: ^tests/
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        name: trim trailing whitespace
+        description: "Trim trailing whitespace"
+        stages: [pre-commit, pre-push]
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+        name: fix end of files
+        description: "Ensure files end with a newline"
+        stages: [pre-commit, pre-push]
+      - id: check-yaml
+        name: check yaml syntax
+        description: "Check YAML files for syntax errors"
+        stages: [pre-commit, pre-push]
+      - id: check-toml
+        name: check toml syntax
+        description: "Check TOML files for syntax errors"
+        stages: [pre-commit, pre-push]
+      - id: check-added-large-files
+        name: check for large files
+        description: "Prevent large files from being committed"
+        stages: [pre-commit, pre-push]
+      - id: check-merge-conflict
+        name: check for merge conflicts
+        description: "Check for merge conflict markers"
+        stages: [pre-commit, pre-push]
+      - id: check-symlinks
+        name: check for broken symlinks
+        description: "Check for broken symlinks"
+        stages: [pre-commit, pre-push]
+      - id: destroyed-symlinks
+        name: check for destroyed symlinks
+        description: "Check for destroyed symlinks"
+        stages: [pre-commit, pre-push]
+      - id: mixed-line-ending
+        name: fix mixed line endings
+        description: "Replace or check mixed line endings"
+        args: [--fix=lf]
+        stages: [pre-commit, pre-push]
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.9.2
+    hooks:
+      - id: bandit
+        name: bandit security scan
+        description: "Run bandit security scanner"
+        args: ["-c", "pyproject.toml"]
+        exclude: ^tests/
+        stages: [pre-push]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        name: codespell spell checking
+        description: "Check for common misspellings"
+        args: ["-L", "hte"]
+        stages: [pre-commit, pre-push]
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.9.24
+    hooks:
+      - id: uv-lock
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        name: detect secrets
+        description: "Detect secrets in code"
+        args: ["--baseline", ".secrets.baseline"]
+        stages: [pre-commit, pre-push]
+        exclude: |
+          (?x)^(
+            pyproject\.toml|
+            uv\.lock|
+            \.secrets\.baseline
+          )$
+
+ci:
+  autofix_commit_msg: "style: auto-fix by pre-commit hooks"
+  autoupdate_commit_msg: "chore: update pre-commit hooks"
+  skip: []
+  submodules: false
